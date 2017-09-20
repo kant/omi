@@ -16,6 +16,7 @@
 #include <fstream>
 #include <cstdio>
 #include <ut/ut.h>
+#include <base/paths.h>
 #include <base/process.h>
 #include <pal/sleep.h>
 #include <base/paths.h>
@@ -2745,6 +2746,32 @@ NitsTestWithSetup(TestOMICLI45_GetInstanceWsmanFailKerberosAuthNoEncrypt, TestCl
         else
             NitsCompare(1, 0, MI_T("test did not run"));   
     }
+}
+NitsEndTest
+
+NitsTestWithSetup(TestOMICLI_PreExec1, TestCliSetupSudo)
+{
+    NitsDisableFaultSim;
+
+    string out;
+    string err;
+    UT_ASSERT(Exec(MI_T("omicli gi oop/requestor/preexec { MSFT_President Key 1 }"), out, err) == 0);
+    string str;
+
+    string expect;
+    UT_ASSERT(InhaleTestFile("TestOMICL14.txt", expect));
+    NitsCompareString(out.c_str(), expect.c_str(), MI_T("Output mismatch"));
+    UT_ASSERT(err == "");
+
+    char resultids[100];
+    printf("%u %u 0 0", (unsigned) getuid(), (unsigned) getgid());
+
+    char resultFile[PAL_MAX_PATH_SIZE];
+    Strlcpy(resultFile, OMI_GetPath(ID_TMPDIR), PAL_MAX_PATH_SIZE);
+    Strlcat(resultFile, "/cli_preexec.txt", PAL_MAX_PATH_SIZE);
+
+    UT_ASSERT(InhaleTestFile(resultFile, out));
+    NitsCompareString(out.c_str(), resultids, MI_T("Output mismatch from preexec script"));
 }
 NitsEndTest
 
