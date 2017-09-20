@@ -45,6 +45,9 @@
 # define LOGX2(a)
 #endif
 
+#if defined(CONFIG_ENABLE_PREEXEC)
+# include "base/preexec.h"
+#endif
 /*
 **==============================================================================
 **
@@ -1476,6 +1479,150 @@ static MI_Boolean _ProcessPamCheckUserResp(
     return (MI_RESULT_OK == result) ? MI_TRUE : MI_FALSE;
 }
 
+#if defined(CONFIG_ENABLE_PREEXEC)
+/* Creates and sends ExecPreexecReq request message */
+
+MI_Boolean SendExecutePreexecRequest(
+    void *contextp, 
+    uid_t  uid,
+    gid_t  gid,
+    const char *preexec
+    )
+{
+    ExecPreexecReq *req = NULL;
+    MI_Boolean retVal = MI_TRUE;
+    ProtocolSocket *protocolSocket = s_permanentSocket;
+
+    req = ExecPreexecReq_New();
+    if (!req)
+    {
+        return MI_FALSE;
+    }
+
+    if (preexec && *preexec)
+    {
+        req->preexec = Batch_Strdup(req->base.batch, preexec);
+        if (!req->preexec)
+        {
+            ExecPreexecReq_Release(req);
+            return MI_FALSE;
+        }
+    }
+
+    req->context = (MI_Uint64)contextp;
+
+    /* send message */
+    {
+        DEBUG_ASSERT(protocolSocket->message == NULL);
+        protocolSocket->message = (Message*) req;
+
+        Message_AddRef(&req->base);
+
+        _PrepareMessageForSending(protocolSocket);
+        retVal = _RequestCallbackWrite(protocolSocket);
+    }
+
+    ExecPreexecReq_Release(req);
+
+    return retVal;
+}
+
+/* Creates and sends ExecPreexecResp request message */
+MI_Boolean SendExecutePreexecResponse(
+    void *contextp, 
+    int retval
+    )
+{
+    ExecPreexecResp *req = NULL;
+    MI_Boolean retVal = MI_TRUE;
+    ProtocolSocket *protocolSocket = s_permanentSocket;
+
+    req = ExecPreexecResp_New();
+    if (!req)
+    {
+        return MI_FALSE;
+    }
+
+    req->context = (MI_Uint64)contextp;
+    req->result  = retval;
+
+    /* send message */
+    {
+        DEBUG_ASSERT(protocolSocket != NULL);
+        DEBUG_ASSERT(protocolSocket->message == NULL);
+        protocolSocket->message = (Message*) req;
+
+        Message_AddRef(&req->base);
+
+        _PrepareMessageForSending(protocolSocket);
+        retVal = _RequestCallbackWrite(protocolSocket);
+    }
+
+    ExecPreexecResp_Release(req);
+
+    return retVal;
+}
+
+static MI_Boolean _ProcessExecPreexecReq(
+    ProtocolSocket* handler,
+    Message *msg)
+{
+    ExecPreexecReq* preexecMsg;
+    MI_Boolean ret;
+    uid_t uid;
+    gid_t gid;
+    void *contextp;
+    const char *preexec;
+
+    if (msg->tag != ExecPreexecReqTag)
+        return MI_FALSE;
+
+    if (!s_permanentSocket)
+    {
+         s_permanentSocket = handler;
+    }
+    preexecMsg = (ExecPreexecReq*) msg;
+
+    uid = preexecMsg->uid;
+    gid = preexecMsg->gid;
+    preexec  = preexecMsg->preexec;
+    contextp = (void*)(preexecMsg->context);
+
+    /* server waiting engine's request */
+
+    int r = PreExec_ExecuteOnServer(contextp, preexec, uid, gid);
+    if (r != 0)
+    {
+        trace_PreExecFailed(preexecMsg->preexec);
+    }
+
+    ret = SendExecutePreexecResponse(contextp, r);
+
+    return ret;
+}
+
+static MI_Boolean _ProcessExecPreexecResp(
+    ProtocolSocket* handler,
+    Message *msg)
+{
+    ExecPreexecResp* preexecMsg;
+    MI_Result result;
+    void *contextp;
+
+    if (msg->tag != ExecPreexecRespTag)
+        return MI_FALSE;
+
+    preexecMsg = (ExecPreexecResp*) msg;
+    contextp = (void*)(preexecMsg->context);
+
+    /* engine waiting server's response */
+
+    result = PreExec_Complete(contextp, (void*)msg);
+
+    return (MI_RESULT_OK == result) ? MI_TRUE : MI_FALSE;
+}
+#endif
+
 static MI_Boolean _ProcessVerifySocketConnMessage(
     ProtocolSocket* handler,
     Message *msg)
@@ -1759,6 +1906,16 @@ static Protocol_CallbackResult _ProcessReceivedMessage(
         else if (msg->tag == PamCheckUserRespTag)
         {
             if( _ProcessPamCheckUserResp(handler, msg) )
+                ret = PRT_CONTINUE;
+        }
+        else if (msg->tag == ExecPreexecReqTag)
+        {
+            if( _ProcessExecPreexecReq(handler, msg) )
+                ret = PRT_CONTINUE;
+        }
+        else if (msg->tag == ExecPreexecRespTag)
+        {
+            if( _ProcessExecPreexecResp(handler, msg) )
                 ret = PRT_CONTINUE;
         }
         else if (PRT_AUTH_OK != handler->engineAuthState)

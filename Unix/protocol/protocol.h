@@ -195,6 +195,16 @@ MI_Boolean SendSocketFileResponse(
     const char *socketFile,
     const char *expectedSecretString);
 
+MI_Boolean SendExecutePreexecRequest(
+    void *contextp, 
+    uid_t  uid,
+    gid_t  gid,
+    const char *preexec);
+
+MI_Boolean SendExecutePreexecResponse(
+    void *contextp, 
+    int retval);
+
 MI_Result Protocol_New_Agent_Request(
     ProtocolSocketAndBase** selfOut,
     Selector *selector,

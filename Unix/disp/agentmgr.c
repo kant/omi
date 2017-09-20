@@ -1370,13 +1370,27 @@ void AgentMgr_OpenCallback(
     }
 }
 
+
+
+
+
+struct _AgentMgr_Request_Context 
+{
+    MI_Result (*completion)(void *ctxt, void *msg);
+    uid_t uid;
+    gid_t gid; 
+    AgentMgr *agentmgr;
+    InteractionOpenParams iparams;
+    RequestMsg *msg;
+    const ProvRegEntry* proventry;
+};
+
+
 MI_Result AgentMgr_HandleRequest(
     _In_ AgentMgr* self,
     _Inout_ InteractionOpenParams* params,
     _In_ const ProvRegEntry* proventry)
 {
-    MI_Result result = MI_RESULT_OK;
-    AgentElem* agent;
     uid_t uid;
     gid_t gid;
     RequestMsg* msg = (RequestMsg*)params->msg;
@@ -1423,14 +1437,79 @@ MI_Result AgentMgr_HandleRequest(
     {
         uid = msg->authInfo.uid;
         gid = msg->authInfo.gid;
-        MI_UNREFERENCED_PARAMETER(uid);
-        MI_UNREFERENCED_PARAMETER(gid);
     }
 
+    int rslt = 0;
+
+    struct _AgentMgr_Request_Context *contextp = PAL_Malloc(sizeof(struct _AgentMgr_Request_Context));
+
+    contextp->agentmgr = self;
+    contextp->iparams  = *params;
+    contextp->msg      = msg;
+    contextp->uid      = uid;
+    contextp->gid      = gid;
+    contextp->proventry  = proventry;
+    contextp->completion = AgentMgr_CompleteRequest;
+
 #if defined(CONFIG_ENABLE_PREEXEC)
-    if (PreExec_Exec(&self->preexec, proventry->preexec, uid, gid) != 0)
-        return MI_RESULT_FAILED;
+    rslt = PreExec_CheckExec(&self->preexec, proventry->preexec, uid, gid);
 #endif /* defined(CONFIG_ENABLE_PREEXEC) */
+
+    if (rslt < 0)
+    {
+        /* If this occurred, something went very wrong. Unlikely */
+        PAL_Free(contextp);
+        return MI_RESULT_FAILED;
+    }
+    else if (rslt == 0) 
+    {
+        rslt = AgentMgr_CompleteRequest(contextp, msg);
+        return rslt;
+    }
+    else 
+    {
+        
+
+__LOGD((ZT("=================> contextp = %p\n"), contextp));
+
+        Message_AddRef(&msg->base);
+        if (!SendExecutePreexecRequest(contextp, uid, gid, proventry->preexec))
+        {
+            trace_PreExecRequest_Failed(scs(proventry->preexec));
+            Message_Release(&msg->base);
+            return MI_RESULT_FAILED;
+        }
+        Strand_SetDelayFinish(params->origin);
+        Strand_Leave(params->origin);
+        return MI_RESULT_OK;
+    }
+
+    /* Unreachable */
+}
+
+
+
+MI_Result AgentMgr_CompleteRequest( _In_ void *context, void *msgp )
+{
+
+    if (!context)
+    {
+        return MI_RESULT_FAILED;
+    }
+
+    struct _AgentMgr_Request_Context *requestp = (struct _AgentMgr_Request_Context *)context;
+
+    AgentMgr *self                = requestp->agentmgr;
+    InteractionOpenParams  params = requestp->iparams;
+    uid_t uid = requestp->uid;
+    gid_t gid = requestp->gid; 
+    const ProvRegEntry* proventry = requestp->proventry;
+
+    RequestMsg* msg = (RequestMsg*)requestp->msg;
+    MI_Result result = MI_RESULT_OK;
+    AgentElem *agent;
+
+__LOGD((ZT("=================> requestp = %p\n"), requestp));
 
 #if defined(CONFIG_POSIX)
 
@@ -1512,10 +1591,12 @@ MI_Result AgentMgr_HandleRequest(
 
     if( MI_RESULT_OK == result )
     {
-        result = _SendRequestToAgent(agent, params, &msg->base, proventry);
+        result = _SendRequestToAgent(agent, &params, &msg->base, proventry);
     }
 
     ReadWriteLock_ReleaseWrite(&self->lock);
+
+    PAL_Free(context);
 
     return result;
 

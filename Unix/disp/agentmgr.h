@@ -20,7 +20,7 @@
 #include <sock/selector.h>
 
 #if defined(CONFIG_ENABLE_PREEXEC)
-# include "preexec.h"
+# include "base/preexec.h"
 #endif
 
 /*
@@ -89,5 +89,7 @@ MI_Result AgentMgr_HandleRequest(
     _In_ AgentMgr* self,
     _Inout_ InteractionOpenParams* params,
     _In_ const ProvRegEntry* proventry);
+
+MI_Result AgentMgr_CompleteRequest( _In_ void *context, _In_ void *msg );
 
 #endif /* _omi_agentmgr_h */

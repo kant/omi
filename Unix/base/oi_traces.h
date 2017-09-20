@@ -951,6 +951,8 @@ OI_EVENT("_RequestItem_Cancel: on RequestItem (%p))")
 void trace_RequestItemCancel(Strand * item);
 OI_EVENT("_SendMessageToAgent msg tag = %d")
 void trace_SendMessageToAgent(int tag);
+OI_EVENT("_PreExecRequest_Failed preexec = %u")
+void trace_PreExecRequest_Failed(const TChar * preexec);
 OI_EVENT("AgentMgr_HandleRequest %p (tag %d)")
 void trace_AgentMgrHandleRequest(void * requestMsg, int msgTag);
 OI_EVENT("ProvReg_BeginClasses() failed: %u: %T")

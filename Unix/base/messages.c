@@ -225,6 +225,12 @@ static const MessageField pamCheckUserFields[] =
     {MFT_END_OF_LIST, 0, 0, 0}
 };
 
+static const MessageField execPreexecReqFields[] =
+{
+    {MFT_POINTER_OPT,offsetof(ExecPreexecReq, preexec),0,0},
+    {MFT_END_OF_LIST, 0, 0, 0}
+};
+
 /* Entries in this array corresponds to MessageTag values */
 typedef struct _MessageDeclaration
 {
@@ -275,7 +281,12 @@ static const MessageDeclaration allMessages[] = {
     {postSocketFileFields,              sizeof(PostSocketFile),         MI_TRUE},
     {socketMaintenanceFields,           sizeof(VerifySocketConn),       MI_TRUE},
     {pamCheckUserFields,                sizeof(PamCheckUserReq),        MI_TRUE},
-    {emptyMessageFields,                sizeof(PamCheckUserResp),       MI_FALSE},
+    {emptyMessageFields,                sizeof(PamCheckUserResp),       MI_FALSE}
+#if defined(CONFIG_ENABLE_PREEXEC)
+    ,
+    {execPreexecReqFields,              sizeof(ExecPreexecReq),         MI_TRUE},
+    {emptyMessageFields,                sizeof(ExecPreexecResp),        MI_FALSE}
+#endif
 };
 
 /*
