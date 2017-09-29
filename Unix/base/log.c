@@ -61,6 +61,20 @@ static Lock _logLock;
 #endif
 static Log_Level _level = OMI_WARNING;
 
+int Log_GetFD()
+{
+    if (g_logstate.f == NULL)
+    {
+        /* Note that this should not happen and is 
+         * here purely for robustness.
+         */
+        return fileno(stderr);
+    }
+    else
+    {
+        return fileno(g_logstate.f);
+    }
+}
 
 static const char* _levelStrings[] =
 {

@@ -269,6 +269,7 @@ void GetCommandLineOptions(
         "--nonroot",
         "--service:",
         "--socketpair:",
+        "--logfilefd:",
         NULL,
     };
 
@@ -424,6 +425,16 @@ void GetCommandLineOptions(
             }
             s_optsPtr->socketpairPort = port;
 
+        }
+        else if (strcmp(state.opt, "--logfilefd") == 0)
+        {
+            char *end = NULL;
+            long filefd = Strtol(state.arg, &end, 10);
+            if (filefd == LONG_MIN || filefd == LONG_MAX)
+            {
+                err(ZT("bad option argument for %s: %s"), scs(state.opt), scs(state.arg));
+            }
+            Log_OpenFD((int) filefd);
         }
         else if (strcmp(state.opt, "--testopts") == 0)
         {

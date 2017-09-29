@@ -4667,6 +4667,78 @@ FILE_EVENTD3(45368, trace_AuthStates_Impl, LOG_DEBUG, PAL_T("Handle:(%p), Client
 #endif
 FILE_EVENTD0(45369, trace_AskServerToAuthenticate_Impl, LOG_DEBUG, PAL_T("Asking Server to PAM authenticate"))
 #if defined(CONFIG_ENABLE_DEBUG)
+#define trace_AgentMgr_PreExec_RequestStrand_Post(a0, a1) trace_AgentMgr_PreExec_RequestStrand_Post_Impl(__FILE__, __LINE__, a0, a1)
+#else
+#define trace_AgentMgr_PreExec_RequestStrand_Post(a0, a1) trace_AgentMgr_PreExec_RequestStrand_Post_Impl(0, 0, a0, a1)
+#endif
+FILE_EVENTD2(45370, trace_AgentMgr_PreExec_RequestStrand_Post_Impl, LOG_DEBUG, PAL_T("AgentMgr_PreExec_RequestStrand_Post: preexecContext (%p), strand (%p)"), void*, void*)
+#if defined(CONFIG_ENABLE_DEBUG)
+#define trace_AgentMgr_PreExec_RequestStrand_PostControl(a0, a1) trace_AgentMgr_PreExec_RequestStrand_PostControl_Impl(__FILE__, __LINE__, a0, a1)
+#else
+#define trace_AgentMgr_PreExec_RequestStrand_PostControl(a0, a1) trace_AgentMgr_PreExec_RequestStrand_PostControl_Impl(0, 0, a0, a1)
+#endif
+FILE_EVENTD2(45371, trace_AgentMgr_PreExec_RequestStrand_PostControl_Impl, LOG_DEBUG, PAL_T("AgentMgr_PreExec_RequestStrand_PostControl: preexecContext (%p), strand (%p)"), void*, void*)
+#if defined(CONFIG_ENABLE_DEBUG)
+#define trace_AgentMgr_PreExec_RequestStrand_Ack(a0, a1) trace_AgentMgr_PreExec_RequestStrand_Ack_Impl(__FILE__, __LINE__, a0, a1)
+#else
+#define trace_AgentMgr_PreExec_RequestStrand_Ack(a0, a1) trace_AgentMgr_PreExec_RequestStrand_Ack_Impl(0, 0, a0, a1)
+#endif
+FILE_EVENTD2(45372, trace_AgentMgr_PreExec_RequestStrand_Ack_Impl, LOG_DEBUG, PAL_T("AgentMgr_PreExec_RequestStrand_Ack: preexecContext (%p), strand (%p)"), void*, void*)
+#if defined(CONFIG_ENABLE_DEBUG)
+#define trace_AgentMgr_PreExec_RequestStrand_Cancel(a0, a1) trace_AgentMgr_PreExec_RequestStrand_Cancel_Impl(__FILE__, __LINE__, a0, a1)
+#else
+#define trace_AgentMgr_PreExec_RequestStrand_Cancel(a0, a1) trace_AgentMgr_PreExec_RequestStrand_Cancel_Impl(0, 0, a0, a1)
+#endif
+FILE_EVENTD2(45373, trace_AgentMgr_PreExec_RequestStrand_Cancel_Impl, LOG_DEBUG, PAL_T("AgentMgr_PreExec_RequestStrand_Cancel: preexecContext (%p), strand (%p)"), void*, void*)
+#if defined(CONFIG_ENABLE_DEBUG)
+#define trace_AgentMgr_PreExec_RequestStrand_Close(a0, a1) trace_AgentMgr_PreExec_RequestStrand_Close_Impl(__FILE__, __LINE__, a0, a1)
+#else
+#define trace_AgentMgr_PreExec_RequestStrand_Close(a0, a1) trace_AgentMgr_PreExec_RequestStrand_Close_Impl(0, 0, a0, a1)
+#endif
+FILE_EVENTD2(45374, trace_AgentMgr_PreExec_RequestStrand_Close_Impl, LOG_DEBUG, PAL_T("AgentMgr_PreExec_RequestStrand_Close: preexecContext (%p), strand (%p)"), void*, void*)
+#if defined(CONFIG_ENABLE_DEBUG)
+#define trace_AgentMgr_PreExec_RequestStrand_Finish(a0, a1) trace_AgentMgr_PreExec_RequestStrand_Finish_Impl(__FILE__, __LINE__, a0, a1)
+#else
+#define trace_AgentMgr_PreExec_RequestStrand_Finish(a0, a1) trace_AgentMgr_PreExec_RequestStrand_Finish_Impl(0, 0, a0, a1)
+#endif
+FILE_EVENTD2(45375, trace_AgentMgr_PreExec_RequestStrand_Finish_Impl, LOG_DEBUG, PAL_T("AgentMgr_PreExec_RequestStrand_Finish: preexecContext (%p), strand (%p)"), void*, void*)
+#if defined(CONFIG_ENABLE_DEBUG)
+#define trace_AgentMgr_PreExec_ResponseStrand_Post(a0, a1) trace_AgentMgr_PreExec_ResponseStrand_Post_Impl(__FILE__, __LINE__, a0, a1)
+#else
+#define trace_AgentMgr_PreExec_ResponseStrand_Post(a0, a1) trace_AgentMgr_PreExec_ResponseStrand_Post_Impl(0, 0, a0, a1)
+#endif
+FILE_EVENTD2(45376, trace_AgentMgr_PreExec_ResponseStrand_Post_Impl, LOG_DEBUG, PAL_T("AgentMgr_PreExec_ResponseStrand_Post: preexecContext (%p), strand (%p)"), void*, void*)
+#if defined(CONFIG_ENABLE_DEBUG)
+#define trace_AgentMgr_PreExec_ResponseStrand_PostControl(a0, a1) trace_AgentMgr_PreExec_ResponseStrand_PostControl_Impl(__FILE__, __LINE__, a0, a1)
+#else
+#define trace_AgentMgr_PreExec_ResponseStrand_PostControl(a0, a1) trace_AgentMgr_PreExec_ResponseStrand_PostControl_Impl(0, 0, a0, a1)
+#endif
+FILE_EVENTD2(45377, trace_AgentMgr_PreExec_ResponseStrand_PostControl_Impl, LOG_DEBUG, PAL_T("AgentMgr_PreExec_ResponseStrand_PostControl: preexecContext (%p), strand (%p)"), void*, void*)
+#if defined(CONFIG_ENABLE_DEBUG)
+#define trace_AgentMgr_PreExec_ResponseStrand_Ack(a0, a1) trace_AgentMgr_PreExec_ResponseStrand_Ack_Impl(__FILE__, __LINE__, a0, a1)
+#else
+#define trace_AgentMgr_PreExec_ResponseStrand_Ack(a0, a1) trace_AgentMgr_PreExec_ResponseStrand_Ack_Impl(0, 0, a0, a1)
+#endif
+FILE_EVENTD2(45378, trace_AgentMgr_PreExec_ResponseStrand_Ack_Impl, LOG_DEBUG, PAL_T("AgentMgr_PreExec_ResponseStrand_Ack: preexecContext (%p), strand (%p)"), void*, void*)
+#if defined(CONFIG_ENABLE_DEBUG)
+#define trace_AgentMgr_PreExec_ResponseStrand_Cancel(a0, a1) trace_AgentMgr_PreExec_ResponseStrand_Cancel_Impl(__FILE__, __LINE__, a0, a1)
+#else
+#define trace_AgentMgr_PreExec_ResponseStrand_Cancel(a0, a1) trace_AgentMgr_PreExec_ResponseStrand_Cancel_Impl(0, 0, a0, a1)
+#endif
+FILE_EVENTD2(45379, trace_AgentMgr_PreExec_ResponseStrand_Cancel_Impl, LOG_DEBUG, PAL_T("AgentMgr_PreExec_ResponseStrand_Cancel: preexecContext (%p), strand (%p)"), void*, void*)
+#if defined(CONFIG_ENABLE_DEBUG)
+#define trace_AgentMgr_PreExec_ResponseStrand_Close(a0, a1) trace_AgentMgr_PreExec_ResponseStrand_Close_Impl(__FILE__, __LINE__, a0, a1)
+#else
+#define trace_AgentMgr_PreExec_ResponseStrand_Close(a0, a1) trace_AgentMgr_PreExec_ResponseStrand_Close_Impl(0, 0, a0, a1)
+#endif
+FILE_EVENTD2(45380, trace_AgentMgr_PreExec_ResponseStrand_Close_Impl, LOG_DEBUG, PAL_T("AgentMgr_PreExec_ResponseStrand_Close: preexecContext (%p), strand (%p)"), void*, void*)
+#if defined(CONFIG_ENABLE_DEBUG)
+#define trace_AgentMgr_PreExec_ResponseStrand_Finish(a0, a1) trace_AgentMgr_PreExec_ResponseStrand_Finish_Impl(__FILE__, __LINE__, a0, a1)
+#else
+#define trace_AgentMgr_PreExec_ResponseStrand_Finish(a0, a1) trace_AgentMgr_PreExec_ResponseStrand_Finish_Impl(0, 0, a0, a1)
+#endif
+FILE_EVENTD2(45381, trace_AgentMgr_PreExec_ResponseStrand_Finish_Impl, LOG_DEBUG, PAL_T("AgentMgr_PreExec_ResponseStrand_Finish: preexecContext (%p), strand (%p)"), void*, void*)
+#if defined(CONFIG_ENABLE_DEBUG)
 #define trace_Strand_Action(a0, a1, a2) trace_Strand_Action_Impl(__FILE__, __LINE__, a0, scs(a1), scs(a2))
 #else
 #define trace_Strand_Action(a0, a1, a2) trace_Strand_Action_Impl(0, 0, a0, scs(a1), scs(a2))

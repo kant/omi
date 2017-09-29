@@ -1216,7 +1216,6 @@ static MI_Boolean _ProcessCreateAgentMsg(
 {
     CreateAgentMsg* agentMsg;
     int logfd = INVALID_SOCK;
-    ProtocolBase* protocolBase = (ProtocolBase*)handler->base.data;
 
     if (msg->tag != CreateAgentMsgTag)
         return MI_FALSE;
@@ -1283,14 +1282,9 @@ static MI_Boolean _ProcessCreateAgentMsg(
 
             if (child > 0)
             {
-                MI_Boolean r = MI_TRUE; //= _SendCreateAgentMsg(handler, CreateAgentMsgResponse, agentMsg->uid, agentMsg->gid, child);
 
-//                sleep(2);
-                trace_ServerClosingSocket(handler, handler->base.sock);
-                Selector_RemoveHandler(protocolBase->selector, &(handler->base));
-                _ProtocolSocket_Cleanup(handler);
                 Sock_Close(logfd);
-                return r;
+                return MI_FALSE; /* finished with connection */
             }
 
             /* We are in child process here */
@@ -1482,8 +1476,17 @@ static MI_Boolean _ProcessPamCheckUserResp(
 #if defined(CONFIG_ENABLE_PREEXEC)
 /* Creates and sends ExecPreexecReq request message */
 
+typedef void (*PreexecCtxCompletion)(void *ctx);
+
+struct Protocol_PreexecContext
+{
+    void *context;
+    PreexecCtxCompletion completion;
+};
+
 MI_Boolean SendExecutePreexecRequest(
     void *contextp, 
+    PreexecCtxCompletion completion,
     uid_t  uid,
     gid_t  gid,
     const char *preexec
@@ -1492,10 +1495,18 @@ MI_Boolean SendExecutePreexecRequest(
     ExecPreexecReq *req = NULL;
     MI_Boolean retVal = MI_TRUE;
     ProtocolSocket *protocolSocket = s_permanentSocket;
+    struct Protocol_PreexecContext *preexecCtx;
+    
+    preexecCtx = PAL_Malloc(sizeof(struct Protocol_PreexecContext));
+    if (preexecCtx == NULL)
+        return MI_FALSE;
+    preexecCtx->context = contextp;
+    preexecCtx->completion = completion;
 
     req = ExecPreexecReq_New();
     if (!req)
     {
+        PAL_Free(preexecCtx);
         return MI_FALSE;
     }
 
@@ -1504,12 +1515,15 @@ MI_Boolean SendExecutePreexecRequest(
         req->preexec = Batch_Strdup(req->base.batch, preexec);
         if (!req->preexec)
         {
+            PAL_Free(preexecCtx);
             ExecPreexecReq_Release(req);
             return MI_FALSE;
         }
     }
 
-    req->context = (MI_Uint64)contextp;
+    req->context = (ptrdiff_t)preexecCtx;
+    req->uid = uid;
+    req->gid = gid;
 
     /* send message */
     {
@@ -1543,7 +1557,7 @@ MI_Boolean SendExecutePreexecResponse(
         return MI_FALSE;
     }
 
-    req->context = (MI_Uint64)contextp;
+    req->context = (ptrdiff_t)contextp;
     req->result  = retval;
 
     /* send message */
@@ -1606,20 +1620,21 @@ static MI_Boolean _ProcessExecPreexecResp(
     Message *msg)
 {
     ExecPreexecResp* preexecMsg;
-    MI_Result result;
-    void *contextp;
+    struct Protocol_PreexecContext *preexecCtx;
 
     if (msg->tag != ExecPreexecRespTag)
         return MI_FALSE;
 
     preexecMsg = (ExecPreexecResp*) msg;
-    contextp = (void*)(preexecMsg->context);
+    preexecCtx = (struct Protocol_PreexecContext *)(preexecMsg->context);
 
     /* engine waiting server's response */
 
-    result = PreExec_Complete(contextp, (void*)msg);
+    preexecCtx->completion(preexecCtx->context);
 
-    return (MI_RESULT_OK == result) ? MI_TRUE : MI_FALSE;
+    PAL_Free(preexecCtx);
+
+    return MI_TRUE;
 }
 #endif
 
@@ -1908,6 +1923,7 @@ static Protocol_CallbackResult _ProcessReceivedMessage(
             if( _ProcessPamCheckUserResp(handler, msg) )
                 ret = PRT_CONTINUE;
         }
+#if defined(CONFIG_ENABLE_PREEXEC)
         else if (msg->tag == ExecPreexecReqTag)
         {
             if( _ProcessExecPreexecReq(handler, msg) )
@@ -1918,6 +1934,7 @@ static Protocol_CallbackResult _ProcessReceivedMessage(
             if( _ProcessExecPreexecResp(handler, msg) )
                 ret = PRT_CONTINUE;
         }
+#endif /* CONFIG_ENABLE_PREEXEC */
         else if (PRT_AUTH_OK != handler->engineAuthState)
         {
             trace_EngineCredentialsNotReceived();

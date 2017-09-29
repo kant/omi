@@ -337,21 +337,3 @@ int PreExec_ExecuteOnServer(
     /* unreachable */
 }
 
-
-
-struct _Preexec_Request_Context 
-{
-    MI_Result (*completion)(void *ctxt, void *msg);
-};
-
-int PreExec_Complete( _In_ void *context, _In_ void *msg )
-
-{ struct _Preexec_Request_Context *pctxt = (struct _Preexec_Request_Context *)context;
-  MI_Result r = MI_RESULT_OK;
-
-     if (pctxt->completion)
-     {
-         r = (*pctxt->completion)(context, msg);
-     }
-     return (int)r;
-}

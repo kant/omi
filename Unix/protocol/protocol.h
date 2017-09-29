@@ -197,6 +197,7 @@ MI_Boolean SendSocketFileResponse(
 
 MI_Boolean SendExecutePreexecRequest(
     void *contextp, 
+    void (*completion)(void *context),
     uid_t  uid,
     gid_t  gid,
     const char *preexec);

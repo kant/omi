@@ -1841,7 +1841,7 @@ void PamCheckUserResp_Print(const PamCheckUserResp* msg, FILE* os);
 typedef struct _ExecPreexecReq
 {
     Message         base;
-    MI_Uint64       context;
+    ptrdiff_t       context;
     MI_Uint32       uid;
     MI_Uint32       gid;
     MI_ConstString  preexec;
@@ -1887,7 +1887,7 @@ void ExecPreexecReq_Print(const ExecPreexecReq* msg, FILE* os);
 typedef struct _ExecPreexecResp
 {
     Message         base;
-    MI_Uint64       context;
+    ptrdiff_t       context;
     MI_Uint32       result;
 }
 ExecPreexecResp;

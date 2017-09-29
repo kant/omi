@@ -90,6 +90,4 @@ MI_Result AgentMgr_HandleRequest(
     _Inout_ InteractionOpenParams* params,
     _In_ const ProvRegEntry* proventry);
 
-MI_Result AgentMgr_CompleteRequest( _In_ void *context, _In_ void *msg );
-
 #endif /* _omi_agentmgr_h */

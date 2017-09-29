@@ -1,5 +1,5 @@
 HOSTING=@requestor@
-PREEXEC="whoami >/tmp/preexec_who"
+PREEXEC=/bin/echo
 LIBRARY=PresidentProvider
 CLASS=MSFT_President
 CLASS=MSFT_PresidentLink{MSFT_President,MSFT_President}
