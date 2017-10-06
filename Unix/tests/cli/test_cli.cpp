@@ -2764,13 +2764,13 @@ NitsTestWithSetup(TestOMICLI_PreExec1, TestCliSetupSudo)
     UT_ASSERT(err == "");
 
     char resultids[100];
-    printf("%u %u 0 0", (unsigned) getuid(), (unsigned) getgid());
+    sprintf(resultids, "%u %u 0 0\n", (unsigned) getuid(), (unsigned) getgid());
 
     char resultFile[PAL_MAX_PATH_SIZE];
     Strlcpy(resultFile, OMI_GetPath(ID_TMPDIR), PAL_MAX_PATH_SIZE);
     Strlcat(resultFile, "/cli_preexec.txt", PAL_MAX_PATH_SIZE);
 
-    UT_ASSERT(InhaleTestFile(resultFile, out));
+    UT_ASSERT(Inhale(resultFile, out, true));
     NitsCompareString(out.c_str(), resultids, MI_T("Output mismatch from preexec script"));
 }
 NitsEndTest

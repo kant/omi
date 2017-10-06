@@ -299,6 +299,9 @@ int PreExec_ExecuteOnServer(
                 close(fd);
             }
 
+            dup2(STDOUT_FILENO, STDOUT_FILENO);
+            dup2(STDERR_FILENO, STDERR_FILENO);
+
             /* Execute the program */
             int r = execl(
                 path,   /* path of program */

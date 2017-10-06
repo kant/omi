@@ -26,7 +26,7 @@ export DYLD_FALLBACK_LIBRARY_PATH
 DYLD_LIBRARY_PATH=$libdir
 export DYLD_LIBRARY_PATH
 
-echo "bash -c \"echo \$1 \$2 `id -u` `id -g` > $tmpdir/cli_preexec.txt\"" > $bindir/cli_preexec.sh
+echo -e '#!/bin/sh\necho "$1 $2 `id -u` `id -g`"' " > $tmpdir/cli_preexec.txt" > $bindir/cli_preexec.sh
 chmod +x $bindir/cli_preexec.sh
 
 $bindir/nits -file:$tmpdir/nitsargs.txt
