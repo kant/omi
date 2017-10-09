@@ -691,6 +691,22 @@ static bool InhaleTestFile(const char* file, string& str)
     return Inhale(path, str, true);
 }
 
+
+static bool FileExists(const char *path)
+{
+    FILE* is = File_Open(path, "rb");
+    if (!is)
+        return false;
+    return true;
+}
+
+// removes file if it exists
+static void removeIfExist( const char* file )
+{
+    if ( access(file, F_OK) == 0 )
+        UT_ASSERT( 0 == remove(file) );
+}
+
 static int Exec(const MI_Char *cmd, string& out, string& err)
 {
     MI_Char command[PAL_MAX_PATH_SIZE];
@@ -2753,12 +2769,22 @@ NitsTestWithSetup(TestOMICLI_PreExec1, TestCliSetupSudo)
 {
     NitsDisableFaultSim;
 
+    // We have a knonw provider, which produces a file named "cli_preexec.txt" when the preexec is run.
+    // The first request to the agent should cause the preexec to be run. The second should not produce the file
     struct passwd *root_pw_info = getpwuid(0);
     string out;
     string err;
+
+    char resultFile[PAL_MAX_PATH_SIZE];
+    Strlcpy(resultFile, OMI_GetPath(ID_TMPDIR), PAL_MAX_PATH_SIZE);
+    Strlcat(resultFile, "/cli_preexec.txt", PAL_MAX_PATH_SIZE);
+
+    removeIfExist(resultFile); // remove cli_preexec.txt is case there is one laying around
+
     UT_ASSERT(Exec(MI_T("omicli gi oop/requestor/preexec { MSFT_President Key 1 }"), out, err) == 0);
     string str;
 
+    // Verify that the preexec gets called the firrst request to a provider with a defined preexec.
     string expect;
     UT_ASSERT(InhaleTestFile("TestOMICL14.txt", expect));
     NitsCompareString(out.c_str(), expect.c_str(), MI_T("Output mismatch"));
@@ -2767,12 +2793,20 @@ NitsTestWithSetup(TestOMICLI_PreExec1, TestCliSetupSudo)
     char resultids[100];
     sprintf(resultids, "%u %u 0 %d\n", (unsigned) getuid(), (unsigned) getgid(), root_pw_info->pw_gid);
 
-    char resultFile[PAL_MAX_PATH_SIZE];
-    Strlcpy(resultFile, OMI_GetPath(ID_TMPDIR), PAL_MAX_PATH_SIZE);
-    Strlcat(resultFile, "/cli_preexec.txt", PAL_MAX_PATH_SIZE);
-
     UT_ASSERT(Inhale(resultFile, out, true));
     NitsCompareString(out.c_str(), resultids, MI_T("Output mismatch from preexec script"));
+
+    // Verify that the preexec does not get called after the firrst request to a provider with a defined preexec.
+    removeIfExist(resultFile); // remove cli_preexec.txt
+         
+    // Execute the request, but we should not see the file produced by the preexec.
+    UT_ASSERT(Exec(MI_T("omicli gi oop/requestor/preexec { MSFT_President Key 1 }"), out, err) == 0);
+    UT_ASSERT(InhaleTestFile("TestOMICL14.txt", expect));
+    NitsCompareString(out.c_str(), expect.c_str(), MI_T("Output mismatch"));
+
+    // Fail if the file was recreated
+    UT_ASSERT_EQUAL(FileExists(resultFile), false);
+
 }
 NitsEndTest
 
