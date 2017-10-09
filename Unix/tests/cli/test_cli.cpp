@@ -2753,6 +2753,7 @@ NitsTestWithSetup(TestOMICLI_PreExec1, TestCliSetupSudo)
 {
     NitsDisableFaultSim;
 
+    struct passwd *root_pw_info = getpwuid(0);
     string out;
     string err;
     UT_ASSERT(Exec(MI_T("omicli gi oop/requestor/preexec { MSFT_President Key 1 }"), out, err) == 0);
@@ -2764,7 +2765,7 @@ NitsTestWithSetup(TestOMICLI_PreExec1, TestCliSetupSudo)
     UT_ASSERT(err == "");
 
     char resultids[100];
-    sprintf(resultids, "%u %u 0 0\n", (unsigned) getuid(), (unsigned) getgid());
+    sprintf(resultids, "%u %u 0 %d\n", (unsigned) getuid(), (unsigned) getgid(), root_pw_info->pw_gid);
 
     char resultFile[PAL_MAX_PATH_SIZE];
     Strlcpy(resultFile, OMI_GetPath(ID_TMPDIR), PAL_MAX_PATH_SIZE);
