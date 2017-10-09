@@ -26,8 +26,16 @@ export DYLD_FALLBACK_LIBRARY_PATH
 DYLD_LIBRARY_PATH=$libdir
 export DYLD_LIBRARY_PATH
 
-echo -e '#!/bin/sh\necho "$1 $2 `id -u` `id -g`"' " > $tmpdir/cli_preexec.txt" > $bindir/cli_preexec.sh
+#
+# We could use id -u and id -g except solaris 10 and hpux dont support it, so we use perl instead
+#
+set -x 
+tmpfile=$tmpdir/file$$
+echo ' ($name, $passwd, $uid, $gid, $quota, $comment, $gcos, $dir, $shell ) = getpwuid($<); printf "%d %d %d %d\n", @ARGV[0], @ARGV[1], $uid, $gid '  >$tmpfile
+echo -e '#!/bin/sh\n' "perl -l $tmpfile " '$1 $2'  >$bindir/cli_preexec.sh
 chmod +x $bindir/cli_preexec.sh
+
+set +x
 
 $bindir/nits -file:$tmpdir/nitsargs.txt
 e=$?
