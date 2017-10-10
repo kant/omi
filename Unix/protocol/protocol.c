@@ -2992,8 +2992,11 @@ MI_Result _ProtocolSocketAndBase_Delete(
     if( MI_RESULT_OK != r )
         return r;
 
-    /* Free self pointer */
-    PAL_Free(self);
+    ptrdiff_t ref = Atomic_Dec(&self->protocolSocket.refCount);
+
+    if (0 == ref)
+        /* Free self pointer */
+        PAL_Free(self);
 
     return MI_RESULT_OK;
 }
